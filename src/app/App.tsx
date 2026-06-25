@@ -13,9 +13,11 @@ import {
   MapPin,
 } from "lucide-react";
 import logoImg from "../imports/Captura_de_pantalla_2026-06-08_211927.png";
+import Home from "./home"; // Importa el componente Home
+import Perfil from "./Perfil";
 
 // ============ TIPOS ============
-type Screen = "login" | "register";
+type Screen = "login" | "register" | "home";
 type AccountType = "usuario" | "negocio";
 
 interface UserData {
@@ -94,7 +96,7 @@ function InputField({
 }
 
 // ============ PANTALLA DE LOGIN ============
-function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
+function LoginScreen({ onSwitch, onLoginSuccess }: { onSwitch: () => void; onLoginSuccess: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -125,11 +127,17 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
       } else {
         localStorage.removeItem("rememberedUser");
       }
-      alert(`✅ ¡Bienvenido ${user.nombre}! Has iniciado sesión correctamente.`);
+      
+      // Guardar usuario actual en sesión
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      
       // Limpiar formulario
       setEmail("");
       setPassword("");
       setRemember(false);
+      
+      // Navegar al home
+      onLoginSuccess();
     } else {
       setError("❌ Correo o contraseña incorrectos");
     }
@@ -243,7 +251,7 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
 }
 
 // ============ PANTALLA DE REGISTRO ============
-function RegisterScreen({ onSwitch }: { onSwitch: () => void }) {
+function RegisterScreen({ onSwitch, onRegisterSuccess }: { onSwitch: () => void; onRegisterSuccess: () => void }) {
   const [accountType, setAccountType] = useState<AccountType>("usuario");
   const [showPass, setShowPass] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -340,13 +348,16 @@ function RegisterScreen({ onSwitch }: { onSwitch: () => void }) {
     setSelectedCategory("");
     setAccountType("usuario");
     
+    // Guardar usuario actual en sesión
+    localStorage.setItem("currentUser", JSON.stringify(newUser));
+    
     setSuccessMessage(`✅ ¡Cuenta creada exitosamente${isNegocio ? " y negocio registrado" : ""}!`);
-    localStorage.setItem("justRegistered", "true");
     
     setTimeout(() => {
       setSuccessMessage("");
-      onSwitch();
-    }, 2000);
+      // Navegar al home después del registro exitoso
+      onRegisterSuccess();
+    }, 1500);
   };
 
   return (
@@ -516,6 +527,24 @@ function RegisterScreen({ onSwitch }: { onSwitch: () => void }) {
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
 
+  // Verificar si hay un usuario en sesión al cargar
+  useEffect(() => {
+    const currentUser = localStorage.getItem("currentUser");
+    if (currentUser) {
+      setScreen("home");
+    }
+  }, []);
+
+  const handleLoginSuccess = () => {
+    setScreen("home");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("rememberedUser");
+    setScreen("login");
+  };
+
   return (
     <div
       className="min-h-screen w-full flex flex-col items-center justify-center py-10 px-4"
@@ -528,10 +557,20 @@ export default function App() {
       </div>
 
       <div className="relative z-10 w-full">
-        {screen === "login" ? (
-          <LoginScreen onSwitch={() => setScreen("register")} />
-        ) : (
-          <RegisterScreen onSwitch={() => setScreen("login")} />
+        {screen === "login" && (
+          <LoginScreen 
+            onSwitch={() => setScreen("register")} 
+            onLoginSuccess={handleLoginSuccess}
+          />
+        )}
+        {screen === "register" && (
+          <RegisterScreen 
+            onSwitch={() => setScreen("login")} 
+            onRegisterSuccess={handleLoginSuccess}
+          />
+        )}
+        {screen === "home" && (
+          <Home onLogout={handleLogout} />
         )}
       </div>
     </div>
