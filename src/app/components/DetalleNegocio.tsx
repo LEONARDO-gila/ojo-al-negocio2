@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { X, Star, MapPin, Phone, Clock, User, Heart, Facebook, Instagram, MessageCircle, CheckCircle2 } from "lucide-react";
 import { BusinessData } from "../data/NegociosEjemplo";
+import Reseñas from "./Reseñas";
 
 interface DetalleNegocioProps {
   negocio: BusinessData | null;
@@ -11,6 +12,7 @@ interface DetalleNegocioProps {
 
 export default function DetalleNegocio({ negocio, onClose, onFavoritoToggle }: DetalleNegocioProps) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showReseñas, setShowReseñas] = useState(false);
 
   useEffect(() => {
     if (negocio) {
@@ -84,174 +86,198 @@ export default function DetalleNegocio({ negocio, onClose, onFavoritoToggle }: D
   };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
+    <>
       <div 
-        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
       >
-        {/* Header con botón cerrar */}
-        <div className="sticky top-0 bg-white z-10 p-4 border-b flex justify-between items-start">
-          <div className="flex items-center gap-3">
-            <div className="text-3xl">
-              {getCategoryEmoji(negocio.categoria)}
+        <div 
+          className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header con botón cerrar */}
+          <div className="sticky top-0 bg-white z-10 p-4 border-b flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl">
+                {getCategoryEmoji(negocio.categoria)}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">{negocio.nombre}</h2>
+                <p className="text-sm text-gray-500">{negocio.giro}</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">{negocio.nombre}</h2>
-              <p className="text-sm text-gray-500">{negocio.giro}</p>
-            </div>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+            >
+              <X size={24} />
+            </button>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
-          >
-            <X size={24} />
-          </button>
-        </div>
 
-        {/* Contenido */}
-        <div className="p-6 space-y-4">
-          {/* Categorías y verificación */}
-          <div className="flex flex-wrap gap-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(negocio.categoria)}`}>
-              {negocio.categoria}
-            </span>
-            {negocio.verificado && (
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex items-center gap-1">
-                <CheckCircle2 size={14} />
-                Verificado
+          {/* Contenido */}
+          <div className="p-6 space-y-4">
+            {/* Categorías y verificación */}
+            <div className="flex flex-wrap gap-2">
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(negocio.categoria)}`}>
+                {negocio.categoria}
               </span>
-            )}
-            {negocio.calificacion && (
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 flex items-center gap-1">
-                <Star size={14} className="fill-yellow-500" />
-                {negocio.calificacion} / 5.0
-              </span>
-            )}
-          </div>
-
-          {/* Descripción */}
-          {negocio.descripcion && (
-            <div className="p-4 bg-gray-50 rounded-xl">
-              <p className="text-gray-700 text-sm leading-relaxed">{negocio.descripcion}</p>
+              {negocio.verificado && (
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 flex items-center gap-1">
+                  <CheckCircle2 size={14} />
+                  Verificado
+                </span>
+              )}
+              {negocio.calificacion && (
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 flex items-center gap-1">
+                  <Star size={14} className="fill-yellow-500" />
+                  {negocio.calificacion} / 5.0
+                </span>
+              )}
             </div>
-          )}
 
-          {/* Información de contacto */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-700 text-sm flex items-center gap-2">
-              📋 Información de contacto
-            </h3>
-            
-            {negocio.direccion && (
-              <div className="flex items-start gap-3 text-sm">
-                <MapPin size={18} className="text-blue-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-gray-500 text-xs">Dirección</p>
-                  <p className="text-gray-800">{negocio.direccion}</p>
-                </div>
+            {/* Descripción */}
+            {negocio.descripcion && (
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <p className="text-gray-700 text-sm leading-relaxed">{negocio.descripcion}</p>
               </div>
             )}
 
-            {negocio.telefono && (
-              <div className="flex items-start gap-3 text-sm">
-                <Phone size={18} className="text-blue-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-gray-500 text-xs">Teléfono</p>
-                  <p className="text-gray-800">{negocio.telefono}</p>
-                </div>
-              </div>
-            )}
-
-            {negocio.horario && (
-              <div className="flex items-start gap-3 text-sm">
-                <Clock size={18} className="text-blue-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-gray-500 text-xs">Horario</p>
-                  <p className="text-gray-800">{negocio.horario}</p>
-                </div>
-              </div>
-            )}
-
-            {negocio.createdAt && (
-              <div className="flex items-start gap-3 text-sm">
-                <User size={18} className="text-blue-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-gray-500 text-xs">Registrado desde</p>
-                  <p className="text-gray-800">{formatDate(negocio.createdAt)}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Redes sociales */}
-          {negocio.redes && (negocio.redes.facebook || negocio.redes.instagram || negocio.redes.whatsapp) && (
+            {/* Información de contacto */}
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-700 text-sm flex items-center gap-2">
-                🌐 Redes sociales
+                📋 Información de contacto
               </h3>
-              <div className="flex flex-wrap gap-3">
-                {negocio.redes.facebook && (
-                  <a 
-                    href={`https://facebook.com/${negocio.redes.facebook}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-lg hover:opacity-80 transition text-sm"
-                  >
-                    <Facebook size={16} />
-                    {negocio.redes.facebook}
-                  </a>
-                )}
-                {negocio.redes.instagram && (
-                  <a 
-                    href={`https://instagram.com/${negocio.redes.instagram}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#E4405F] to-[#F56040] text-white rounded-lg hover:opacity-80 transition text-sm"
-                  >
-                    <Instagram size={16} />
-                    {negocio.redes.instagram}
-                  </a>
-                )}
-                {negocio.redes.whatsapp && (
-                  <a 
-                    href={`https://wa.me/${negocio.redes.whatsapp}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-lg hover:opacity-80 transition text-sm"
-                  >
-                    <MessageCircle size={16} />
-                    WhatsApp
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
+              
+              {negocio.direccion && (
+                <div className="flex items-start gap-3 text-sm">
+                  <MapPin size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-gray-500 text-xs">Dirección</p>
+                    <p className="text-gray-800">{negocio.direccion}</p>
+                  </div>
+                </div>
+              )}
 
-          {/* Botones de acción */}
-          <div className="flex gap-3 pt-4 border-t">
-            <button
-              onClick={handleFavorito}
-              className={`flex-1 py-2.5 rounded-lg flex items-center justify-center gap-2 transition ${
-                isFavorite 
-                  ? 'bg-red-50 text-red-600 border-2 border-red-200' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <Heart size={18} className={isFavorite ? 'fill-red-500' : ''} />
-              {isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-lg bg-blue-900 text-white hover:bg-blue-800 transition"
-            >
-              Cerrar
-            </button>
+              {negocio.telefono && (
+                <div className="flex items-start gap-3 text-sm">
+                  <Phone size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-gray-500 text-xs">Teléfono</p>
+                    <p className="text-gray-800">{negocio.telefono}</p>
+                  </div>
+                </div>
+              )}
+
+              {negocio.horario && (
+                <div className="flex items-start gap-3 text-sm">
+                  <Clock size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-gray-500 text-xs">Horario</p>
+                    <p className="text-gray-800">{negocio.horario}</p>
+                  </div>
+                </div>
+              )}
+
+              {negocio.createdAt && (
+                <div className="flex items-start gap-3 text-sm">
+                  <User size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-gray-500 text-xs">Registrado desde</p>
+                    <p className="text-gray-800">{formatDate(negocio.createdAt)}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Redes sociales */}
+            {negocio.redes && (negocio.redes.facebook || negocio.redes.instagram || negocio.redes.whatsapp) && (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-gray-700 text-sm flex items-center gap-2">
+                  🌐 Redes sociales
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {negocio.redes.facebook && (
+                    <a 
+                      href={`https://facebook.com/${negocio.redes.facebook}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-[#1877F2] text-white rounded-lg hover:opacity-80 transition text-sm"
+                    >
+                      <Facebook size={16} />
+                      {negocio.redes.facebook}
+                    </a>
+                  )}
+                  {negocio.redes.instagram && (
+                    <a 
+                      href={`https://instagram.com/${negocio.redes.instagram}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#E4405F] to-[#F56040] text-white rounded-lg hover:opacity-80 transition text-sm"
+                    >
+                      <Instagram size={16} />
+                      {negocio.redes.instagram}
+                    </a>
+                  )}
+                  {negocio.redes.whatsapp && (
+                    <a 
+                      href={`https://wa.me/${negocio.redes.whatsapp}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-lg hover:opacity-80 transition text-sm"
+                    >
+                      <MessageCircle size={16} />
+                      WhatsApp
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Botones de acción */}
+            <div className="flex gap-3 pt-4 border-t flex-wrap">
+              <button
+                onClick={handleFavorito}
+                className={`flex-1 py-2.5 rounded-lg flex items-center justify-center gap-2 transition ${
+                  isFavorite 
+                    ? 'bg-red-50 text-red-600 border-2 border-red-200' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Heart size={18} className={isFavorite ? 'fill-red-500' : ''} />
+                {isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              </button>
+
+              {/* 👇 NUEVO BOTÓN DE RESEÑAS */}
+              <button
+                onClick={() => setShowReseñas(true)}
+                className="flex-1 py-2.5 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition flex items-center justify-center gap-2"
+              >
+                <Star size={18} />
+                Ver reseñas
+              </button>
+
+              <button
+                onClick={onClose}
+                className="flex-1 py-2.5 rounded-lg bg-blue-900 text-white hover:bg-blue-800 transition"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* 👇 MODAL DE RESEÑAS */}
+      {showReseñas && (
+        <Reseñas
+          negocio={negocio}
+          onClose={() => setShowReseñas(false)}
+          onReseñaAgregada={() => {
+            // Actualizar la información del negocio si es necesario
+            console.log("Reseña agregada, actualizando...");
+          }}
+        />
+      )}
+    </>
   );
 }

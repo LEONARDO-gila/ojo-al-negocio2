@@ -5,8 +5,8 @@ import logoImg from "../imports/Captura_de_pantalla_2026-06-08_211927.png";
 import Perfil from "./Perfil";
 import Favoritos from "./Favoritos";
 import Mapa from "./components/Mapa";
-import { obtenerNegocios, buscarNegocios, BusinessData } from "./data/negociosEjemplo";
-
+import DetalleNegocio from "./components/DetalleNegocio";
+import { obtenerNegocios, buscarNegocios, BusinessData } from "./data/NegociosEjemplo";
 
 type HomeProps = {
   onLogout: () => void;
@@ -17,6 +17,8 @@ export default function Home({ onLogout }: HomeProps) {
   const [showPerfil, setShowPerfil] = useState(false);
   const [showFavoritos, setShowFavoritos] = useState(false);
   const [showMapa, setShowMapa] = useState(false);
+  const [showDetalleNegocio, setShowDetalleNegocio] = useState(false);
+  const [negocioSeleccionado, setNegocioSeleccionado] = useState<BusinessData | null>(null);
   const [userName, setUserName] = useState("");
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const [resultadosBusqueda, setResultadosBusqueda] = useState<BusinessData[]>([]);
@@ -56,6 +58,11 @@ export default function Home({ onLogout }: HomeProps) {
     }
   };
 
+  const handleVerNegocio = (negocio: BusinessData) => {
+    setNegocioSeleccionado(negocio);
+    setShowDetalleNegocio(true);
+  };
+
   const getCategoryIcon = (categoria: string) => {
     const icons: Record<string, any> = {
       "Restaurante / Comida": () => <span>🍽️</span>,
@@ -67,6 +74,15 @@ export default function Home({ onLogout }: HomeProps) {
     };
     const Icon = icons[categoria] || (() => <span>📍</span>);
     return <Icon />;
+  };
+
+  // 👇 FUNCIÓN CORREGIDA
+  const cerrarTodosModales = () => {
+    setShowPerfil(false);
+    setShowFavoritos(false);
+    setShowMapa(false);
+    setShowDetalleNegocio(false);
+    setMenuOpen(false);
   };
 
   return (
@@ -85,7 +101,7 @@ export default function Home({ onLogout }: HomeProps) {
       {/* Navbar */}
       <header className="fixed top-0 left-0 w-full z-50 bg-white/70 backdrop-blur-md border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={cerrarTodosModales}>
             <img src={logoImg} alt="Ojo al Negocio logo" className="w-14 h-14 object-contain" />
             <h1 className="font-bold text-2xl text-blue-900">Ojo al Negocio</h1>
           </div>
@@ -144,11 +160,25 @@ export default function Home({ onLogout }: HomeProps) {
 
       {/* Contenido */}
       <main className="relative z-10 max-w-5xl mx-auto px-6 pt-36 pb-10 overflow-y-auto h-screen">
+        {/* Modales */}
         {showPerfil && <Perfil onClose={() => setShowPerfil(false)} />}
         {showFavoritos && <Favoritos onClose={() => setShowFavoritos(false)} />}
         {showMapa && <Mapa onClose={() => setShowMapa(false)} />}
         
-        {!showPerfil && !showFavoritos && !showMapa && (
+        {showDetalleNegocio && negocioSeleccionado && (
+          <DetalleNegocio
+            negocio={negocioSeleccionado}
+            onClose={() => {
+              setShowDetalleNegocio(false);
+              setNegocioSeleccionado(null);
+            }}
+            onFavoritoToggle={(id) => {
+              console.log("Favorito toggled:", id);
+            }}
+          />
+        )}
+        
+        {!showPerfil && !showFavoritos && !showMapa && !showDetalleNegocio && (
           <>
             <h2 className="text-center text-4xl font-bold text-slate-800">
               Elige mejor con cada opción
@@ -191,7 +221,11 @@ export default function Home({ onLogout }: HomeProps) {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {resultadosBusqueda.map((negocio) => (
-                      <div key={negocio.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition">
+                      <div 
+                        key={negocio.id} 
+                        className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer hover:border-blue-300 border-2 border-transparent"
+                        onClick={() => handleVerNegocio(negocio)}
+                      >
                         <div className="flex items-start gap-3">
                           <div className="p-2 bg-blue-50 rounded-lg text-xl">
                             {getCategoryIcon(negocio.categoria)}
@@ -240,7 +274,7 @@ export default function Home({ onLogout }: HomeProps) {
                   {["Restaurantes", "Hoteles", "Tiendas"].map((cat) => (
                     <div
                       key={cat}
-                      className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center shadow-sm hover:shadow-md transition cursor-pointer"
+                      className="bg-white/80 backdrop-blur-sm rounded-xl p-6 text-center shadow-sm hover:shadow-md transition cursor-pointer hover:bg-white"
                       onClick={() => {
                         setTerminoBusqueda(cat);
                         handleBuscar();
@@ -260,7 +294,11 @@ export default function Home({ onLogout }: HomeProps) {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {negociosDestacados.map((negocio) => (
-                        <div key={negocio.id} className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition">
+                        <div 
+                          key={negocio.id} 
+                          className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer hover:border-blue-300 border-2 border-transparent"
+                          onClick={() => handleVerNegocio(negocio)}
+                        >
                           <div className="flex items-start gap-3">
                             <div className="p-2 bg-blue-50 rounded-lg text-xl">
                               {getCategoryIcon(negocio.categoria)}
@@ -277,6 +315,15 @@ export default function Home({ onLogout }: HomeProps) {
                                     ✓ Verificado
                                   </span>
                                 )}
+                                {negocio.calificacion && (
+                                  <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    ★ {negocio.calificacion}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="mt-2 flex items-start gap-1 text-sm text-gray-500">
+                                <span>📍</span>
+                                <span>{negocio.direccion}</span>
                               </div>
                             </div>
                           </div>

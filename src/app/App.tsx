@@ -13,8 +13,9 @@ import {
   MapPin,
 } from "lucide-react";
 import logoImg from "../imports/Captura_de_pantalla_2026-06-08_211927.png";
-import Home from "./home"; // Importa el componente Home
-import Perfil from "./Perfil";
+import Home from "./home";
+import { cargarNegociosEjemplo } from "./data/NegociosEjemplo";
+import { cargarReseñasEjemplo } from "./data/ReseñasData";
 
 // ============ TIPOS ============
 type Screen = "login" | "register" | "home";
@@ -41,6 +42,8 @@ interface BusinessData {
   categoria: string;
   verificado: boolean;
   createdAt: string;
+  lat?: number;
+  lng?: number;
 }
 
 const BUSINESS_CATEGORIES = [
@@ -114,6 +117,17 @@ function LoginScreen({ onSwitch, onLoginSuccess }: { onSwitch: () => void; onLog
     }
   }, []);
 
+  // Cargar credenciales recordadas
+  useEffect(() => {
+    const remembered = localStorage.getItem("rememberedUser");
+    if (remembered) {
+      const { email: rememberedEmail, password: rememberedPass } = JSON.parse(remembered);
+      setEmail(rememberedEmail);
+      setPassword(rememberedPass);
+      setRemember(true);
+    }
+  }, []);
+
   const handleLogin = () => {
     setError("");
     setSuccessMessage("");
@@ -128,30 +142,17 @@ function LoginScreen({ onSwitch, onLoginSuccess }: { onSwitch: () => void; onLog
         localStorage.removeItem("rememberedUser");
       }
       
-      // Guardar usuario actual en sesión
       localStorage.setItem("currentUser", JSON.stringify(user));
       
-      // Limpiar formulario
       setEmail("");
       setPassword("");
       setRemember(false);
       
-      // Navegar al home
       onLoginSuccess();
     } else {
       setError("❌ Correo o contraseña incorrectos");
     }
   };
-
-  useEffect(() => {
-    const remembered = localStorage.getItem("rememberedUser");
-    if (remembered) {
-      const { email: rememberedEmail, password: rememberedPass } = JSON.parse(remembered);
-      setEmail(rememberedEmail);
-      setPassword(rememberedPass);
-      setRemember(true);
-    }
-  }, []);
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -270,8 +271,13 @@ function RegisterScreen({ onSwitch, onRegisterSuccess }: { onSwitch: () => void;
   const [bizGiro, setBizGiro] = useState("");
   const [bizDir, setBizDir] = useState("");
   const [bizTel, setBizTel] = useState("");
+  const [businessCoords, setBusinessCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const isNegocio = accountType === "negocio";
+
+  const generateId = () => {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+  };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -306,7 +312,7 @@ function RegisterScreen({ onSwitch, onRegisterSuccess }: { onSwitch: () => void;
     const businesses: BusinessData[] = JSON.parse(localStorage.getItem("businesses") || "[]");
     
     const newUser: UserData = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       nombre,
       email,
       telefono: tel,
@@ -319,8 +325,12 @@ function RegisterScreen({ onSwitch, onRegisterSuccess }: { onSwitch: () => void;
     localStorage.setItem("users", JSON.stringify(users));
     
     if (isNegocio) {
+      // Generar coordenadas aleatorias cerca de Cancún si no se seleccionaron
+      const lat = businessCoords?.lat || 21.1619 + (Math.random() - 0.5) * 0.05;
+      const lng = businessCoords?.lng || -86.8515 + (Math.random() - 0.5) * 0.05;
+      
       const newBusiness: BusinessData = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         userId: newUser.id,
         nombre: bizNombre,
         rfc: bizRfc,
@@ -330,6 +340,8 @@ function RegisterScreen({ onSwitch, onRegisterSuccess }: { onSwitch: () => void;
         categoria: selectedCategory,
         verificado: false,
         createdAt: new Date().toISOString(),
+        lat: lat,
+        lng: lng,
       };
       businesses.push(newBusiness);
       localStorage.setItem("businesses", JSON.stringify(businesses));
@@ -347,15 +359,14 @@ function RegisterScreen({ onSwitch, onRegisterSuccess }: { onSwitch: () => void;
     setBizTel("");
     setSelectedCategory("");
     setAccountType("usuario");
+    setBusinessCoords(null);
     
-    // Guardar usuario actual en sesión
     localStorage.setItem("currentUser", JSON.stringify(newUser));
     
     setSuccessMessage(`✅ ¡Cuenta creada exitosamente${isNegocio ? " y negocio registrado" : ""}!`);
     
     setTimeout(() => {
       setSuccessMessage("");
-      // Navegar al home después del registro exitoso
       onRegisterSuccess();
     }, 1500);
   };
@@ -527,8 +538,11 @@ function RegisterScreen({ onSwitch, onRegisterSuccess }: { onSwitch: () => void;
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
 
-  // Verificar si hay un usuario en sesión al cargar
+  // Cargar datos de ejemplo y verificar sesión al iniciar
   useEffect(() => {
+    cargarNegociosEjemplo();
+    cargarReseñasEjemplo();
+    
     const currentUser = localStorage.getItem("currentUser");
     if (currentUser) {
       setScreen("home");
@@ -536,6 +550,10 @@ export default function App() {
   }, []);
 
   const handleLoginSuccess = () => {
+    setScreen("home");
+  };
+
+  const handleRegisterSuccess = () => {
     setScreen("home");
   };
 
@@ -566,7 +584,7 @@ export default function App() {
         {screen === "register" && (
           <RegisterScreen 
             onSwitch={() => setScreen("login")} 
-            onRegisterSuccess={handleLoginSuccess}
+            onRegisterSuccess={handleRegisterSuccess}
           />
         )}
         {screen === "home" && (

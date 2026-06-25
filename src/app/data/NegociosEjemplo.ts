@@ -1,4 +1,4 @@
-// src/app/data/negociosEjemplo.ts
+// src/app/data/NegociosEjemplo.ts
 
 export interface BusinessData {
   id: string;
@@ -14,6 +14,9 @@ export interface BusinessData {
   calificacion?: number;
   descripcion?: string;
   horario?: string;
+  ultimaReseña?: string; // 👈 NUEVO: fecha de la última reseña
+  lat?: number;
+  lng?: number;
   redes?: {
     facebook?: string;
     instagram?: string;
@@ -36,6 +39,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.8,
     descripcion: "El mejor restaurante de carnes en Cancún.",
     horario: "Lunes a Domingo 12:00 - 23:00",
+    ultimaReseña: "2024-12-20T14:30:00Z",
+    lat: 21.1619,
+    lng: -86.8515,
     redes: {
       facebook: "@laparrilladelchef",
       instagram: "@laparrilladelchef",
@@ -56,6 +62,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.5,
     descripcion: "Hotel boutique con vista al mar Caribe.",
     horario: "Check-in 15:00 / Check-out 12:00",
+    ultimaReseña: "2024-12-18T10:00:00Z",
+    lat: 21.1375,
+    lng: -86.7422,
     redes: {
       facebook: "@caribesunset",
       instagram: "@caribesunset",
@@ -76,6 +85,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.9,
     descripcion: "Descubre la magia de la cultura Maya.",
     horario: "Lunes a Domingo 08:00 - 20:00",
+    ultimaReseña: "2024-12-22T16:00:00Z",
+    lat: 20.6296,
+    lng: -87.0793,
     redes: {
       facebook: "@aventurasmayas",
       instagram: "@aventurasmayas",
@@ -96,6 +108,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.2,
     descripcion: "Relájate con nuestros tratamientos de spa.",
     horario: "Lunes a Sábado 09:00 - 21:00",
+    ultimaReseña: "2024-11-30T11:00:00Z",
+    lat: 20.5127,
+    lng: -86.9448,
     redes: {
       facebook: "@spadelmar",
       instagram: "@spadelmar",
@@ -116,6 +131,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.0,
     descripcion: "Renta de autos en Cancún.",
     horario: "Lunes a Domingo 07:00 - 22:00",
+    ultimaReseña: "2024-11-25T09:00:00Z",
+    lat: 21.1619,
+    lng: -86.8515,
     redes: {
       facebook: "@rentcarcancun",
       instagram: "@rentcarcancun",
@@ -136,6 +154,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.3,
     descripcion: "Artesanías típicas de la región.",
     horario: "Lunes a Domingo 09:00 - 20:00",
+    ultimaReseña: "2024-10-15T15:00:00Z",
+    lat: 20.6883,
+    lng: -88.2002,
     redes: {
       facebook: "@latiendadelpueblo",
       instagram: "@latiendadelpueblo"
@@ -155,6 +176,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.7,
     descripcion: "Los mejores mariscos frescos del Caribe.",
     horario: "Martes a Domingo 11:00 - 22:00",
+    ultimaReseña: "2024-12-19T13:00:00Z",
+    lat: 20.8478,
+    lng: -86.8775,
     redes: {
       facebook: "@mariscoselpuerto",
       instagram: "@mariscoselpuerto",
@@ -175,6 +199,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.6,
     descripcion: "Hotel todo incluido con temática maya.",
     horario: "Check-in 15:00 / Check-out 12:00",
+    ultimaReseña: "2024-12-21T12:00:00Z",
+    lat: 20.6301,
+    lng: -87.0787,
     redes: {
       facebook: "@paraisomaya",
       instagram: "@paraisomaya",
@@ -195,6 +222,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.1,
     descripcion: "Explora la belleza natural de Isla Mujeres.",
     horario: "Lunes a Domingo 08:00 - 18:00",
+    ultimaReseña: "2024-11-10T08:00:00Z",
+    lat: 21.2413,
+    lng: -86.7398,
     redes: {
       facebook: "@ecotoursisla",
       instagram: "@ecotoursisla",
@@ -215,6 +245,9 @@ export const NEGOCIOS_EJEMPLO: BusinessData[] = [
     calificacion: 4.4,
     descripcion: "Farmacia con servicio 24/7.",
     horario: "24 horas / 7 días",
+    ultimaReseña: "2024-12-01T14:00:00Z",
+    lat: 21.1619,
+    lng: -86.8515,
     redes: {
       facebook: "@farmaciacaribe",
       whatsapp: "9980123456"
@@ -264,4 +297,82 @@ export const buscarNegocios = (termino: string): BusinessData[] => {
     n.categoria.toLowerCase().includes(terminoLower) ||
     n.direccion.toLowerCase().includes(terminoLower)
   );
+};
+
+// ============ FILTROS AVANZADOS ============
+
+export interface FiltrosBusqueda {
+  calificacionMinima?: number;
+  fechaUltimaReseña?: string; // fecha límite (ej: "2024-01-01")
+  categoria?: string;
+  termino?: string;
+}
+
+export const filtrarNegocios = (
+  negocios: BusinessData[],
+  filtros: FiltrosBusqueda
+): BusinessData[] => {
+  let resultado = [...negocios];
+
+  // Filtrar por calificación mínima
+  if (filtros.calificacionMinima && filtros.calificacionMinima > 0) {
+    resultado = resultado.filter(
+      n => (n.calificacion || 0) >= filtros.calificacionMinima!
+    );
+  }
+
+  // Filtrar por fecha de última reseña
+  if (filtros.fechaUltimaReseña) {
+    const fechaLimite = new Date(filtros.fechaUltimaReseña);
+    // Ajustar a fin del día para incluir toda la fecha
+    fechaLimite.setHours(23, 59, 59, 999);
+    
+    resultado = resultado.filter(n => {
+      if (!n.ultimaReseña) return false;
+      const fechaReseña = new Date(n.ultimaReseña);
+      return fechaReseña >= fechaLimite;
+    });
+  }
+
+  // Filtrar por categoría
+  if (filtros.categoria && filtros.categoria !== "Todas") {
+    resultado = resultado.filter(n => n.categoria === filtros.categoria);
+  }
+
+  // Filtrar por término de búsqueda
+  if (filtros.termino && filtros.termino.trim() !== "") {
+    const terminoLower = filtros.termino.toLowerCase().trim();
+    resultado = resultado.filter(n =>
+      n.nombre.toLowerCase().includes(terminoLower) ||
+      n.giro.toLowerCase().includes(terminoLower) ||
+      n.direccion.toLowerCase().includes(terminoLower)
+    );
+  }
+
+  return resultado;
+};
+
+// Obtener categorías únicas
+export const obtenerCategorias = (negocios: BusinessData[]): string[] => {
+  const categorias = new Set(negocios.map(n => n.categoria));
+  return ["Todas", ...Array.from(categorias)];
+};
+
+// Obtener estadísticas de negocios
+export const obtenerEstadisticas = (negocios: BusinessData[]) => {
+  const total = negocios.length;
+  const verificado = negocios.filter(n => n.verificado).length;
+  const promedioCalificacion = negocios.reduce((acc, n) => acc + (n.calificacion || 0), 0) / total || 0;
+  
+  const categorias = negocios.reduce((acc, n) => {
+    acc[n.categoria] = (acc[n.categoria] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  return {
+    total,
+    verificado,
+    promedioCalificacion: Math.round(promedioCalificacion * 10) / 10,
+    categorias
+  };
 };
